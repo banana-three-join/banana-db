@@ -69,19 +69,20 @@ func (stmt *Statement) Execute(tbl *Table) error {
 	}
 }
 
-func (stmt *Statement) execSelect(tbl *Table) error {
+func (stmt *Statement) execInsert(tbl *Table) error {
 	if tbl.NumRows >= RowsMaxPerTable {
 		return fmt.Errorf("table is full")
 	}
 
 	pageNumber := tbl.NumRows / RowsPerPage
-	offset := RowSize * (tbl.NumRows % RowsPerPage)
+	rowNumber := tbl.NumRows % RowsPerPage
+	rowOffset := RowSize * rowNumber
 
 	if tbl.Pages[pageNumber] == nil {
 		tbl.Pages[pageNumber] = make([]byte, PageSize)
 	}
 
-	dst := tbl.Pages[pageNumber][offset : offset+RowSize]
+	dst := tbl.Pages[pageNumber][rowOffset : rowOffset+RowSize]
 	Serialize(stmt.r, dst)
 
 	tbl.NumRows++
@@ -89,7 +90,13 @@ func (stmt *Statement) execSelect(tbl *Table) error {
 	return nil
 }
 
-func (stmt *Statement) execInsert(tbl *Table) error {
+func (stmt *Statement) execSelect(tbl *Table) error {
+	/*
+		from 0 to n amount of rows in page
+		need page number
+
+	*/
+
 	src, err := tbl.GetRowByNum(int(stmt.r.Id))
 	if err != nil {
 		return err

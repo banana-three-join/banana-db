@@ -60,6 +60,8 @@
 
 /*
 	TODO:
+		Provide a more throughout description of how the db works at startup
+		Write .help
 		Add logs to execution
 		Implement B+tree
 		Add transactions
@@ -69,6 +71,7 @@
 			Incremental updates with logs
 			Check with checksums
 		Utilize vm to swap around indexes
+		Implement tests
 */
 
 package main
@@ -80,6 +83,7 @@ import (
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+
 	for scanner.Scan() {
 		if err := readCommand(scanner.Text()); err != nil {
 			break
