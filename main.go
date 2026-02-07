@@ -72,6 +72,16 @@
 			Check with checksums
 		Utilize vm to swap around indexes
 		Implement tests
+
+	Important tasks:
+		Remove hard coded offsets in serialize/deserialize
+		is it reading my stmts properly?
+		rewrite row.id
+			id reads page number and not the id of the row
+		is it inserting
+		it it selecting
+		return something which showcases that the stmt worked
+		implement tests
 */
 
 package main

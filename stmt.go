@@ -70,7 +70,7 @@ func (stmt *Statement) Execute(tbl *Table) error {
 }
 
 func (stmt *Statement) execInsert(tbl *Table) error {
-	if tbl.NumRows >= RowsMaxPerTable {
+	if tbl.NumRows >= MaxRowsPerTable {
 		return fmt.Errorf("table is full")
 	}
 
@@ -91,21 +91,19 @@ func (stmt *Statement) execInsert(tbl *Table) error {
 }
 
 func (stmt *Statement) execSelect(tbl *Table) error {
-	/*
-		from 0 to n amount of rows in page
-		need page number
-
-	*/
-
-	src, err := tbl.GetRowByNum(int(stmt.r.Id))
+	rows, err := tbl.GetRowsByPage(int(stmt.r.Id)) //row id is currently page
 	if err != nil {
 		return err
 	}
 	var r Row
-	if err := Deserialize(src, &r); err != nil {
-		return err
+
+	for i := range rows {
+		if err := Deserialize(rows[i], &r); err != nil {
+			return err
+		}
+
+		fmt.Printf("Index: %d, Username: %s, Email: %s", r.Id, r.Username, r.Email)
 	}
 
-	fmt.Printf("Index: %d, Username: %s, Email: %s", r.Id, r.Username, r.Email)
 	return nil
 }

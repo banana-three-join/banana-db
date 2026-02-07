@@ -20,8 +20,8 @@ const (
 					vm is the one responsible of this layered transactions
 	*/
 
-	PageSize        = 4096 //4kb page size in most vm systems
-	TableMaxPages   = 100
-	RowsPerPage     = PageSize / RowSize
-	RowsMaxPerTable = RowsPerPage * TableMaxPages
+	PageSize         = 4096 //4kb page size in most vm systems
+	MaxPagesPerTable = 100
+	RowsPerPage      = PageSize / RowSize
+	MaxRowsPerTable  = RowsPerPage * MaxPagesPerTable
 )
