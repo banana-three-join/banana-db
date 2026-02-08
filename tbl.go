@@ -9,6 +9,12 @@ type Table struct {
 	Pages   [MaxPagesPerTable][]byte
 }
 
+/*
+	numrows provides tracking of the stage of the table
+	if functions don't take into account the numrows then they could be out of sync and throw off the checks
+	it would be better if they were part of the pages as a header to allocate all of the information about the rows in one place
+*/
+
 type Row struct {
 	Id       uint32
 	Username string

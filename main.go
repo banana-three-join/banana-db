@@ -82,6 +82,9 @@
 		it it selecting
 		return something which showcases that the stmt worked
 		implement tests
+			test get row functionality
+				compare bytes
+		Fix how the adding onto pages works because it's currently dependant on how the tbl insertion works
 */
 
 package main
