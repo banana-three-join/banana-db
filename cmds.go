@@ -6,14 +6,7 @@ import (
 	"strings"
 )
 
-func readCommand(input string) error {
-	if err := performCommand(input); err != nil {
-		return err
-	}
-	return nil
-}
-
-func performCommand(input string) error {
+func readCommand(t *Table, input string) error {
 	if strings.HasPrefix(input, ".") {
 		if err := doMetaCommand(input); err != nil {
 			return err
@@ -22,14 +15,22 @@ func performCommand(input string) error {
 		return nil
 	}
 
+	return doStatement(t, input)
+}
+
+func doStatement(t *Table, input string) error {
 	stmt := &Statement{}
 
-	if err := stmt.Prepare(input); err != nil {
+	output, err := stmt.Prepare(input)
+	fmt.Println(output)
+
+	if err != nil {
 		return err
 	}
 
-	t := &Table{}
-	if err := stmt.Execute(t); err != nil {
+	output, err = stmt.Execute(t)
+	fmt.Println(output)
+	if err != nil {
 		return err
 	}
 
@@ -45,6 +46,17 @@ func doMetaCommand(cmd string) error {
 		/*
 			print a throughout list of all the features that the db implements
 		*/
+		fmt.Println(`[META COMMANDS HELP]
+.help
+	Throughout list of all available commands
+.exit
+	Exits app
+
+[STATEMENT HELP]
+SELECT: RETURNS PAGE IF AVAIlABLE
+	FORMAT: SELECT [PAGE INDEX]
+INSERT: INSERTS VALUES INTO A CURRENT TABLE
+	FORMAT: INSERT [INDEX] [USERNAME] [EMAIL]`)
 		return nil
 	}
 	return fmt.Errorf("error meta cmd not found")
