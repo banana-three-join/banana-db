@@ -6,21 +6,18 @@ import (
 	"testing"
 )
 
-func TestGetRowsByPage(t *testing.T) {
+func TestGetPage(t *testing.T) {
 	var firstFullPage [100][]byte
 	var secondFullPage [100][]byte
 
-	createExpectedRows := func(numRows int) [][]byte {
-		rows := make([][]byte, numRows)
+	createExpectedPage := func(numRows int) []byte {
+		page := make([]byte, RowSize)
 		for i := range numRows {
-			row := make([]byte, RowSize)
-			binary.LittleEndian.PutUint32(row[IdOffset:], uint32(i))
-			copy(row[UsernameOffset:UsernameOffset+UsernameSize], "test")
-			copy(row[EmailOffset:EmailOffset+EmailSize], "test@test.gmail")
-
-			rows[i] = row
+			binary.LittleEndian.PutUint32(page[IdOffset:], uint32(i))
+			copy(page[UsernameOffset:UsernameOffset+UsernameSize], "test")
+			copy(page[EmailOffset:EmailOffset+EmailSize], "test@test.gmail")
 		}
-		return rows
+		return page
 	}
 
 	var fullRow [PageSize]byte
@@ -55,40 +52,40 @@ func TestGetRowsByPage(t *testing.T) {
 		name    string
 		pageNum int
 		tbl     Table
-		want    [][]byte
+		want    []byte
 	}{
 		{
 			"request first full page",
 			1,
-			Table{NumRows: uint32(RowsPerPage), Pages: firstFullPage},
-			createExpectedRows(RowsPerPage),
+			Table{NumRows: uint32(RowsPerPage), Pager: &Pager{Pages: firstFullPage}},
+			createExpectedPage(RowsPerPage),
 		},
 		{
 			"request second full page",
 			2,
-			Table{NumRows: uint32(RowsPerPage * 2), Pages: secondFullPage},
-			createExpectedRows(RowsPerPage * 2),
+			Table{NumRows: uint32(RowsPerPage * 2), Pager: &Pager{Pages: secondFullPage}},
+			createExpectedPage(RowsPerPage * 2),
 		},
 		{
 			"request first partial page",
 			2,
-			Table{NumRows: uint32(RowsPerPage / 2), Pages: firstPartialPage},
-			createExpectedRows(RowsPerPage / 2),
+			Table{NumRows: uint32(RowsPerPage / 2), Pager: &Pager{Pages: firstPartialPage}},
+			createExpectedPage(RowsPerPage / 2),
 		},
 		{
 			"request second partial page",
 			2,
-			Table{NumRows: uint32(RowsPerPage + (RowsPerPage / 2)), Pages: secondPartialPage},
-			createExpectedRows(RowsPerPage + (RowsPerPage / 2)),
+			Table{NumRows: uint32(RowsPerPage + (RowsPerPage / 2)), Pager: &Pager{Pages: secondPartialPage}},
+			createExpectedPage(RowsPerPage + (RowsPerPage / 2)),
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := tt.tbl.GetRowsByPage(tt.pageNum)
-			for i, r := range got {
-				if !bytes.Equal(r, tt.want[i]) {
-					t.Errorf("test: %s failed. at index: %d, got: %v is different from want: %v", tt.name, i, r, tt.want[i])
-				}
+			got, _ := tt.tbl.Pager.GetPage(tt.pageNum)
+
+			if !bytes.Equal(got, tt.want) {
+				t.Errorf("test: %s failed. page number: %d, got: %v,  want: %v", tt.name, tt.pageNum, got, tt.want)
 			}
+
 		})
 	}
 
@@ -98,12 +95,12 @@ func TestGetRowsByPage(t *testing.T) {
 		input int
 		tbl   Table
 	}{
-		{"fail on out of bounds page request [negative value]", 0, Table{}},
+		{"fail on out of bounds page request [negative value]", -1, Table{}},
 		{"fail on out of bounds page request [positive value]", 101, Table{}},
 		{"fail on request of empty page", 30, Table{}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := tt.tbl.GetRowsByPage(tt.input); err == nil {
+			if _, err := tt.tbl.Pager.GetPage(tt.input); err == nil {
 				t.Errorf("test: %s failed", tt.name)
 			}
 		})
