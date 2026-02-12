@@ -25,3 +25,26 @@ func Deserialize(src []byte, dst *Row) error {
 
 	return nil
 }
+
+func SplitRowsFromPage(p []byte) [][]byte {
+	pageLen := len(p)
+	if pageLen == 0 {
+		return nil
+	}
+
+	numRows := pageLen / RowSize
+	if pageLen%RowSize != 0 {
+		numRows++
+	}
+
+	rows := make([][]byte, numRows)
+
+	for i := range numRows {
+		offset := RowSize * i
+		row := make([]byte, RowSize)
+		copy(row, p[offset:offset+RowSize])
+		rows[i] = row
+	}
+
+	return rows
+}
