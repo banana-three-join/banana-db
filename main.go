@@ -61,7 +61,6 @@
 /*
 	TODO:
 		Provide a more throughout description of how the db works at startup
-		Write .help
 		Add logs to execution
 		Implement B+tree
 		Add transactions
@@ -74,31 +73,39 @@
 		Implement tests
 
 	Important tasks:
-		Remove hard coded offsets in serialize/deserialize
-		is it reading my stmts properly?
 		rewrite row.id
 			id reads page number and not the id of the row
-		is it inserting
-		it it selecting
-		return something which showcases that the stmt worked
 		implement tests
-			test get row functionality
-				compare bytes
+			check if table stores exactly 1.4 rows
+		fix table
 		Fix how the adding onto pages works because it's currently dependant on how the tbl insertion works
+		Make GetPage more robust and efficient
+		Insert currently does inplace writing instead of writing onto temp and syncing the files
+		Implement flushing
+			Save through using pages and not individual rows
+		On restart, the code will rewrite onto the paper because the cursor isn't saving where it last wrote
+		Fix EOF error
 */
 
 package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	//temporary fix
+	//read command should only be responsible for reading a query and making sure it works fine
+	//it shouldn't receive a table
+	t := &Table{}
+
 	for scanner.Scan() {
-		if err := readCommand(scanner.Text()); err != nil {
+		if err := readCommand(t, scanner.Text()); err != nil {
+			fmt.Printf("%s \n", err.Error())
 			break
 		}
 	}
